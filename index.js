@@ -70,15 +70,7 @@ async function run() {
       const result = await toyCollection.findOne(query)
       res.send(result)
     });
-
-    // app.get('/myToys', async (req, res) => {
-    //   let query = {};
-    //   if(req.query?.email){
-    //     query = {email: req.query.email}
-    //   }
-    //   const result = await bookingCollection.find(query).toArray();
-    //   res.send(result)
-    // })  
+ 
 
     app.get('/myToys', verifyJWT, async(req, res) => {
       const decoded = req.decoded;
@@ -100,8 +92,24 @@ async function run() {
       const query = {_id: new ObjectId(id)};
       const result = await toyCollection.deleteOne(query)
       res.send(result)
-    })
+    });
 
+
+    app.patch('/toyDetails/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const option = {upsert: false};
+      const updatedToy = req.body;
+      const toy = {
+          $set: {
+            price: updatedToy.price,
+            quantity: updatedToy.quantity,
+            details: updatedToy.details
+          }
+      };
+      const result = await coffeeCollection.updateOne(filter, toy, option);
+      res.send(result)
+  });
 
 
     app.post('/toys', async (req, res) => {
