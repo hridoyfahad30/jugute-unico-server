@@ -51,9 +51,27 @@ async function run() {
     const toyCollection = client.db('toyDB').collection('toys');
 
 
+    const indexKeys = {name: 1, subcategory: 1};
+    const indexOptions = {name: "nameCategory"};
+
+    const result = await toyCollection.createIndex(indexKeys, indexOptions);
+
+    app.get('/toySearch/:text', async (req, res) => {
+      const searchText = req.params.text;
+
+      const result = await toyCollection.find({
+        $or: [
+          {name: {$regex: searchText, $options: "i"}},
+          {subcategory: {$regex: searchText, $options: "i"}},
+        ],
+      }).toArray()
+      res.send(result)
+    });
+
+
     app.post('/jwt', (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, process.env.USER_ACCESS_TOKEN, {expiresIn: '1h'});
+      const token = jwt.sign(user, process.env.USER_ACCESS_TOKEN, {expiresIn: '2h'});
       res.send({token});
     })
 
@@ -74,7 +92,6 @@ async function run() {
 
     app.get('/myToys', verifyJWT, async(req, res) => {
       const decoded = req.decoded;
-      console.log(req.query.email);
 
       if(decoded.email !== req.query.email){
         return res.status(403).send({error: true, message: 'forbidden access'})
@@ -95,7 +112,7 @@ async function run() {
     });
 
 
-    app.patch('/toyDetails/:id', async (req, res) => {
+    app.patch('/toy/:id', async (req, res) => {
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)};
       const option = {upsert: false};
@@ -107,7 +124,7 @@ async function run() {
             details: updatedToy.details
           }
       };
-      const result = await coffeeCollection.updateOne(filter, toy, option);
+      const result = await toyCollection.updateOne(filter, toy, option);
       res.send(result)
   });
 
