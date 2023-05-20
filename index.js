@@ -78,7 +78,7 @@ async function run() {
     //   }
     //   const result = await bookingCollection.find(query).toArray();
     //   res.send(result)
-    // })
+    // })  
 
     app.get('/myToys', verifyJWT, async(req, res) => {
       const decoded = req.decoded;
